@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VSP Server", "VSP Server\VSP Server.csproj", "{8FD38B2F-542B-4B48-88E3-FEEEE158A833}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VSP Client", "VSP Client\VSP Client.csproj", "{583D71E9-FD7F-4B1A-9C71-7D87D602509B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8FD38B2F-542B-4B48-88E3-FEEEE158A833}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FD38B2F-542B-4B48-88E3-FEEEE158A833}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FD38B2F-542B-4B48-88E3-FEEEE158A833}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FD38B2F-542B-4B48-88E3-FEEEE158A833}.Release|Any CPU.Build.0 = Release|Any CPU
+		{583D71E9-FD7F-4B1A-9C71-7D87D602509B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{583D71E9-FD7F-4B1A-9C71-7D87D602509B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{583D71E9-FD7F-4B1A-9C71-7D87D602509B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{583D71E9-FD7F-4B1A-9C71-7D87D602509B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

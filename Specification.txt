@@ -1,0 +1,14 @@
+VSP Specification:
+// All string values given in UTF-8!
+	
+	1 Byte - Action
+		#1 - Say Hello!
+			input: nothing
+			output: 
+				1 Byte - #5 (length of "HELLO")
+				5 Bytes - "HELLO"
+		//#2 - Create file
+
+		#255 - Disconnect
+			input: nothing
+			output: nothing
