@@ -34,7 +34,8 @@ namespace VSP_Server.VSPEngine {
 			// загрузка локальной информации сервера
 			mUserFolder = "Users";
 			mDataFolder = "Data";
-			LoadRegInfos();
+			bool status = LoadRegInfos();
+			InformationLoading?.Invoke(status);
 
 			// инициализируем поток
 			mThread = new Thread(new ThreadStart(workThread));
@@ -53,6 +54,16 @@ namespace VSP_Server.VSPEngine {
 				mListener.BeginAcceptTcpClient(new AsyncCallback(gotPeer), null);
 			} catch (Exception ex) { return false; }
 			return true;
+		}
+		/// <summary>
+		/// Останавливает сервер.
+		/// </summary>
+		public void Stop() {
+			mInterrupted = true;
+			foreach (Peer p in mPeers) p.Disconnect();
+			mListener.Stop();
+			bool status = SaveRegInfos();
+			InformationSaving?.Invoke(status);
 		}
 
 		/// <summary>
@@ -87,15 +98,18 @@ namespace VSP_Server.VSPEngine {
 			}
 		}
 
+		private bool LoadRegInfos() {
+			mRegInfos = new List<RegistrationInfo>(); // создаём пустой лист для хранения информации о регистрациях
 
-		public void LoadRegInfos() {
-			mRegInfos = new List<RegistrationInfo>();
+			// проверяем наличие нужных для получения информации папок
 			DirectoryInfo di = new DirectoryInfo(mDataFolder);
 			if (!di.Exists) di.Create();
 			if (di.GetDirectories("Users").Length == 0) {
 				di.CreateSubdirectory("Users");
-				return;
+				return false;
 			}
+
+			// получаем информацию
 			di = new DirectoryInfo(di.FullName + "\\Users");
 			foreach (FileInfo fi in di.GetFiles()) {
 				try {
@@ -103,10 +117,47 @@ namespace VSP_Server.VSPEngine {
 					String name = ReadString(fs, 1);
 					String password = ReadString(fs, 1);
 					String email = ReadString(fs, 1);
+					fs.Close();
 					mRegInfos.Add(new RegistrationInfo(name, password, email, RegistrationInfo.RegistrationStatus.CONFIRMED));
 				} catch (Exception ex) { continue; }
 			}
+			return true;
 		}
+		private bool SaveRegInfos() {
+			bool status = true;
+			// проверяем наличие нужных для хранения информации папок
+			DirectoryInfo di = new DirectoryInfo(mDataFolder);
+			if (!di.Exists) di.Create();
+			if (di.GetDirectories("Users").Length == 0) {
+				di.CreateSubdirectory("Users");
+			}
+			
+			// удаляем имеющуюся информацию с локального хранилища
+			di = new DirectoryInfo(di.FullName + "\\Users");
+			foreach (FileInfo fi in di.GetFiles()) {
+				try {
+					fi.Delete();
+				} catch (Exception ex) { status = false; continue; }
+			}
+
+			// записываем новую информацию
+			foreach (RegistrationInfo regInfo in mRegInfos) {
+				if (regInfo.RegStatus == RegistrationInfo.RegistrationStatus.ON_CONFIRM) continue;
+				BinaryWriter bw = new BinaryWriter(File.Open(String.Format("{0}\\{1}.usr", di.FullName, regInfo.Name), FileMode.Create));
+				byte[] buffer = Encoding.UTF8.GetBytes(regInfo.Name);
+				bw.Write((byte) buffer.Length);
+				bw.Write(buffer);
+				buffer = Encoding.UTF8.GetBytes(regInfo.Password);
+				bw.Write((byte) buffer.Length);
+				bw.Write(buffer);
+				buffer = Encoding.UTF8.GetBytes(regInfo.Email);
+				bw.Write((byte) buffer.Length);
+				bw.Write(buffer);
+				bw.Close();
+			}
+			return status;
+		}
+
 		// удаляем пиры, если они отключаются
 		private void workThread() {
 			while (!mInterrupted) {
@@ -126,11 +177,13 @@ namespace VSP_Server.VSPEngine {
 			}
 		}
 		private void gotPeer(IAsyncResult result) {
-			TcpClient tcp = mListener.EndAcceptTcpClient(result);
-			Peer p = new Peer(tcp);
-			mPeers.Add(p);
-			PeerConnected(p);
-			mListener.BeginAcceptTcpClient(new AsyncCallback(gotPeer), null);
+			try {
+				TcpClient tcp = mListener.EndAcceptTcpClient(result);
+				Peer p = new Peer(tcp);
+				mPeers.Add(p);
+				PeerConnected(p);
+				mListener.BeginAcceptTcpClient(new AsyncCallback(gotPeer), null);
+			} catch (Exception ex) {}
 		}
 
 		private String ReadString(Stream stream, int lengthOfLength) {
@@ -155,6 +208,16 @@ namespace VSP_Server.VSPEngine {
 		/// </summary>
 		/// <param name="peer">Клиент (пир).</param>
 		public delegate void PeerDisconnectedHandler(Peer peer);
+		/// <summary>
+		/// Предоставляет метод, обрабатывающий событие InformationLoaded.
+		/// </summary>
+		/// <param name="status">Статус операции.</param>
+		public delegate void InformationLoadingHandler(bool status);
+		/// <summary>
+		/// Предоставляет метод, обрабатывающий событие InformationSaved.
+		/// </summary>
+		/// <param name="status">Статус операции.</param>
+		public delegate void InformationSavingHandler(bool status);
 
 		/// <summary>
 		/// Вызывается, когда пир подключается к серверу.
@@ -164,5 +227,13 @@ namespace VSP_Server.VSPEngine {
 		/// Вызывается, когда пир отключается от сервера.
 		/// </summary>
 		public event PeerDisconnectedHandler PeerDisconnected;
+		/// <summary>
+		/// Вызывается, когда была предпринята попытка загрузить информацию.
+		/// </summary>
+		public event InformationLoadingHandler InformationLoading;
+		/// <summary>
+		/// Вызывается, когда была предпринята попытка сохранить информацию.
+		/// </summary>
+		public event InformationSavingHandler InformationSaving;
 	}
 }

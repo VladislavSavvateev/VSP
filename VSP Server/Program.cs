@@ -18,6 +18,7 @@ namespace VSP_Server {
 			mServer = new Server();
 			mServer.PeerConnected += PeerConnected;
 			mServer.PeerDisconnected += PeerDisconnected;
+			Console.CancelKeyPress += ExitServer;
 			report(TypeOfReport.OK, "Server initialized!");
 			if (mServer.Start()) report(TypeOfReport.OK, "Server started!");
 			else {
@@ -25,6 +26,12 @@ namespace VSP_Server {
 				return;
 			}
 			Thread.Sleep(-1);
+		}
+
+		public static void ExitServer(object sender, ConsoleCancelEventArgs args) {
+			mServer.Stop();
+			report(TypeOfReport.OK, "Server stopped!");
+			Environment.Exit(0);
 		}
 
 		private static void PeerConnected(Peer peer) {

@@ -65,6 +65,14 @@ namespace VSP_Server.VSPEngine.PeerPart {
 		public String GetAddress() {
 			return mTCP.Client.RemoteEndPoint.ToString();
 		}
+		/// <summary>
+		/// Отключает пира от сервера.
+		/// </summary>
+		public void Disconnect() {
+			mInterrupted = true;
+			mStream.Close();
+			mTCP.Close();
+		}
 
 		private void workThread() {
 			while (!mInterrupted) {
