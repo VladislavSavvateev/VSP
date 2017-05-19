@@ -16,21 +16,27 @@ namespace VSP_Server.VSPEngine {
 	class Server {
 		TcpListener mListener;
 		List<Peer> mPeers;
+		List<RegistrationInfo> mRegInfos;
 
 		Thread mThread;
 		bool mInterrupted;
 
 		String mUserFolder;
+		String mDataFolder;
 
 		/// <summary>
 		/// Основной конструктор.
 		/// </summary>
 		public Server() {
-			mListener = new TcpListener(IPAddress.Any, 1209); // creating instance of TCPListener
-			mPeers = new List<Peer>(); // init peers engine
-			mUserFolder = "/Users";
+			mListener = new TcpListener(IPAddress.Any, 1209); // создаём экземпляр TcpListener
+			mPeers = new List<Peer>(); // инициализируем движок пиров
 
-			// init thread
+			// загрузка локальной информации сервера
+			mUserFolder = "Users";
+			mDataFolder = "Data";
+			LoadRegInfos();
+
+			// инициализируем поток
 			mThread = new Thread(new ThreadStart(workThread));
 			mThread.Start();
 			mInterrupted = false;
@@ -41,7 +47,7 @@ namespace VSP_Server.VSPEngine {
 		/// </summary>
 		/// <returns>Результат запуска сервера.</returns>
 		public bool Start() {
-			// trying to start listener
+			// пытаемся запустить прослушиватель
 			try {
 				mListener.Start();
 				mListener.BeginAcceptTcpClient(new AsyncCallback(gotPeer), null);
@@ -58,6 +64,7 @@ namespace VSP_Server.VSPEngine {
 
 		/// <summary>
 		/// Возвращает или задаёт папку для хранения данных пользователей.
+		/// По умолчанию - Users
 		/// </summary>
 		public String UserFolder {
 			get { return mUserFolder; }
@@ -67,8 +74,40 @@ namespace VSP_Server.VSPEngine {
 				mUserFolder = UserFolder;
 			}
 		}
+		/// <summary>
+		/// Возвращает или задаёт папку для хранения данных пользователей.
+		/// По умолчанию - Data
+		/// </summary>
+		public String DataFolder {
+			get { return mDataFolder; }
+			set {
+				DirectoryInfo di = new DirectoryInfo(mDataFolder);
+				if (!di.Exists) di.Create();
+				mDataFolder = DataFolder;
+			}
+		}
 
-		// delete peers if they disconnected
+
+		public void LoadRegInfos() {
+			mRegInfos = new List<RegistrationInfo>();
+			DirectoryInfo di = new DirectoryInfo(mDataFolder);
+			if (!di.Exists) di.Create();
+			if (di.GetDirectories("Users").Length == 0) {
+				di.CreateSubdirectory("Users");
+				return;
+			}
+			di = new DirectoryInfo(di.FullName + "\\Users");
+			foreach (FileInfo fi in di.GetFiles()) {
+				try {
+					FileStream fs = fi.Open(FileMode.Open);
+					String name = ReadString(fs, 1);
+					String password = ReadString(fs, 1);
+					String email = ReadString(fs, 1);
+					mRegInfos.Add(new RegistrationInfo(name, password, email, RegistrationInfo.RegistrationStatus.CONFIRMED));
+				} catch (Exception ex) { continue; }
+			}
+		}
+		// удаляем пиры, если они отключаются
 		private void workThread() {
 			while (!mInterrupted) {
 				try {
@@ -86,13 +125,24 @@ namespace VSP_Server.VSPEngine {
 				Thread.Sleep(50);
 			}
 		}
-
 		private void gotPeer(IAsyncResult result) {
 			TcpClient tcp = mListener.EndAcceptTcpClient(result);
 			Peer p = new Peer(tcp);
 			mPeers.Add(p);
 			PeerConnected(p);
 			mListener.BeginAcceptTcpClient(new AsyncCallback(gotPeer), null);
+		}
+
+		private String ReadString(Stream stream, int lengthOfLength) {
+			long length = 0;
+			for (int i = 0; i < lengthOfLength; i++) {
+				int val = stream.ReadByte();
+				if (val == -1) return null;
+				length = (length << 8) + val;
+			}
+			byte[] buffer = new byte[length];
+			if (stream.Read(buffer, 0, (int) length) != length) return null;
+			return Encoding.UTF8.GetString(buffer);
 		}
 
 		/// <summary>
