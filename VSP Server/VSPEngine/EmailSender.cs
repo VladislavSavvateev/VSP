@@ -8,10 +8,21 @@ using System.Threading.Tasks;
 using VSP_Server.VSPEngine.PeerPart;
 
 namespace VSP_Server.VSPEngine {
+	/// <summary>
+	/// Класс, реализующий передачу писем от лица сервера его пользователям.
+	/// </summary>
 	class EmailSender {
+
+		/// <summary>
+		/// Шаблон для отправки писем о регистрации.
+		/// </summary>
 		public static String RegCodeTemplate = "Добро пожаловать на сервер, использующий VSP!\n" +
 			"Для продолжения регистрации введите код: {0}";
 
+		/// <summary>
+		/// Отправляет письмо с регистрационным кодом на почту пользователя.
+		/// </summary>
+		/// <param name="ri">Регистрационная информация.</param>
 		public static void SendRegCode(RegistrationInfo ri) {
 			SmtpClient smtpServer = new SmtpClient(EmailConstants.HOST, EmailConstants.PORT);
 			smtpServer.EnableSsl = true;
