@@ -45,6 +45,8 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VSPEngine\EmailConstants.cs" />
+    <Compile Include="VSPEngine\EmailSender.cs" />
     <Compile Include="VSPEngine\PeerPart\Peer.cs" />
     <Compile Include="VSPEngine\PeerPart\RegistrationInfo.cs" />
     <Compile Include="VSPEngine\Server.cs" />

@@ -14,6 +14,7 @@ namespace VSP_Server.VSPEngine.PeerPart {
 		String mEmail;
 		long mToken;
 		RegistrationStatus mRegStatus;
+		int mRegCode;
 
 		/// <summary>
 		/// Определяет статус регистрации.
@@ -46,6 +47,7 @@ namespace VSP_Server.VSPEngine.PeerPart {
 			mEmail = email;
 			mRegStatus = status;
 			mToken = GenerateRandomToken();
+			if (status == RegistrationStatus.ON_CONFIRM) mRegCode = GenerateRandomRegCode();
 		}
 
 		private long GenerateRandomToken() {
@@ -54,6 +56,10 @@ namespace VSP_Server.VSPEngine.PeerPart {
 			for (int i = 0; i < 16; i++) 
 				hex += r.Next(16).ToString("X");
 			return Convert.ToInt64(hex, 16);
+		}
+		private int GenerateRandomRegCode() {
+			Random r = new Random();
+			return r.Next(100000, 999999);
 		}
 
 		/// <summary>
@@ -87,7 +93,13 @@ namespace VSP_Server.VSPEngine.PeerPart {
 			get { return mRegStatus; }
 			set { mRegStatus = RegStatus; }
 		}
-		
+		/// <summary>
+		/// Возвращает регистрационный код.
+		/// </summary>
+		public int RegCode {
+			get { return mRegCode; }
+		}
+
 		/// <summary>
 		/// Возвращает общую информацию об информации о регистрации.
 		/// </summary>

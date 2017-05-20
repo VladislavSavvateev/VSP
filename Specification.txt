@@ -9,6 +9,27 @@ VSP Specification:
 				5 Bytes - "HELLO"
 		//#2 - Create file
 
+		#252 - Register (send request)
+			input:
+				1 Byte - Length of "User Name" (N)
+				N Bytes - User Name
+				1 Byte - Length of "Password" (K)
+				K Bytes - Password
+				1 Byte - Length of (E-Mail) (L)
+				L Bytes - E-Mail
+
+			output:
+				1 Byte - Status (1 - OK)
+					8 Bytes - Registration Token
+
+		#253 - Register (confirmation)
+			input:
+				1 Byte - Status (1 - OK)
+					8 Bytes - Registration Token
+					4 Bytes - Registration Code
+
+			output: 
+				1 Byte - Status (1 - OK)
 		#255 - Disconnect
 			input: nothing
 			output: nothing
