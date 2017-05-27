@@ -86,9 +86,8 @@ namespace VSP_Client.VSPEngine {
 		#region Action methods
 		/// <summary>
 		/// Посылает запрос Say Hello! серверу и получает ответ.
-		/// Вернёт null, если ответ сервера или его поведение будет расценено как неожиданное.
 		/// </summary>
-		/// <returns>Ответ.</returns>
+		/// <returns>Ответ. (null, если ответ сервера или его поведение будет расценено как неожиданное)</returns>
 		public String SayHello() {
 			if (!IsConnected) return null;
 			mStream.WriteByte(1);
@@ -102,6 +101,13 @@ namespace VSP_Client.VSPEngine {
 			mStream.Flush();
 			return Encoding.UTF8.GetString(buffer);
 		}
+		/// <summary>
+		/// Посылает запрос серверу на регистрацию нового пользователя.
+		/// </summary>
+		/// <param name="name">Имя.</param>
+		/// <param name="password">Пароль.</param>
+		/// <param name="email">E-mail.</param>
+		/// <returns>Токен регистрации. (null, если ответ сервера или его поведение будет расценено как неожиданное)</returns>
 		public long? Register(String name, String password, String email) {
 			// тонна проверок на правильность аргументов
 			if (name == null) throw new ArgumentException("\"name\" не может быть null.");
@@ -139,6 +145,22 @@ namespace VSP_Client.VSPEngine {
 				token[i] = (byte) val;
 			}
 			return BitConverter.ToInt64(token, 0);
+		}
+		/// <summary>
+		/// Посылает запрос серверу на подтверждение регистрации.
+		/// </summary>
+		/// <param name="token">Токен регистрации.</param>
+		/// <param name="code">Код регистрации.</param>
+		/// <returns>Статус регистрации.</returns>
+		public bool Confirm(long token, int code) {
+			// отправка данных
+			mStream.WriteByte(253);
+			mStream.Write(BitConverter.GetBytes(token), 0, 8);
+			mStream.Write(BitConverter.GetBytes(code), 0, 4);
+
+			// получение данных
+			int status = mStream.ReadByte();
+			return status == 1; 
 		}
 		#endregion
 	}

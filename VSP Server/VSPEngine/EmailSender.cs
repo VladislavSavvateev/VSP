@@ -33,7 +33,7 @@ namespace VSP_Server.VSPEngine {
 			message.Body = String.Format(RegCodeTemplate, ri.RegCode);
 			message.Subject = "Регистрация на сервере с VSP";
 			message.Priority = MailPriority.High;
-			smtpServer.Send(message);
+			smtpServer.SendMailAsync(message);
 		}
 	}
 }

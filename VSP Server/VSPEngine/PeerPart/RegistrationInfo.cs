@@ -91,7 +91,7 @@ namespace VSP_Server.VSPEngine.PeerPart {
 		/// </summary>
 		public RegistrationStatus RegStatus {
 			get { return mRegStatus; }
-			set { mRegStatus = RegStatus; }
+			set { mRegStatus = value; }
 		}
 		/// <summary>
 		/// Возвращает регистрационный код.

@@ -101,6 +101,11 @@ namespace VSP_Server.VSPEngine.PeerPart {
 							c252_register();
 							break;
 						#endregion
+						#region #253 - Register (confirmation)
+						case 253:
+							c253_confirmation();
+							break;
+						#endregion
 						#region #255 - Disconnect
 						case 255:
 							c255_disconnect();
@@ -128,12 +133,15 @@ namespace VSP_Server.VSPEngine.PeerPart {
 			try {
 				// получаем данные
 				String name = getString();
+				String password = getString();
+				String email = getString();
+
 				if (name == null) throw new Exception();
 				if (name.Length < 3) throw new Exception();
-				String password = getString();
+
 				if (password == null) throw new Exception();
 				if (password.Length < 3) throw new Exception();
-				String email = getString();
+
 				if (email == null) throw new Exception();
 				//if (!SqlMethods.Like(email, "*@*.*")) throw new Exception();
 
@@ -143,6 +151,8 @@ namespace VSP_Server.VSPEngine.PeerPart {
 				foreach (RegistrationInfo ri_ in mServer.RegInfos) {
 					if (ri_.Equals(ri)) {
 						isExists = true;
+						if (ri_.RegStatus == RegistrationInfo.RegistrationStatus.ON_CONFIRM) ri = ri_;
+						else throw new Exception();
 						break;
 					}
 				}
@@ -154,6 +164,32 @@ namespace VSP_Server.VSPEngine.PeerPart {
 				mStream.WriteByte(1);
 				mStream.Write(BitConverter.GetBytes(ri.Token), 0, 8);
 			} catch (Exception ex) { mStream.WriteByte(0); }
+		}
+		private void c253_confirmation() {
+			try {
+				// получаем данные
+				byte[] token_raw = new byte[8];
+				for (int i = 0; i < 8; i++) {
+					int val = mStream.ReadByte();
+					if (val == -1) throw new Exception();
+					token_raw[i] = (byte) val;
+				}
+				byte[] code_raw = new byte[4];
+				for (int i = 0; i < 4; i++) {
+					int val = mStream.ReadByte();
+					if (val == -1) throw new Exception();
+					code_raw[i] = (byte) val;
+				}
+
+				// проверяем совпадение данных
+				long token = BitConverter.ToInt64(token_raw, 0);
+				if (mRegInfo.Token != token) throw new Exception();
+				int code = BitConverter.ToInt32(code_raw, 0);
+				if (mRegInfo.RegCode != code) throw new Exception();
+
+				mRegInfo.RegStatus = RegistrationInfo.RegistrationStatus.CONFIRMED;
+				mStream.WriteByte(1);
+			} catch	(Exception ex) { mStream.WriteByte(0); }
 		}
 		#endregion
 

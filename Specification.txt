@@ -24,9 +24,8 @@ VSP Specification:
 
 		#253 - Register (confirmation)
 			input:
-				1 Byte - Status (1 - OK)
-					8 Bytes - Registration Token
-					4 Bytes - Registration Code
+				8 Bytes - Registration Token
+				4 Bytes - Registration Code
 
 			output: 
 				1 Byte - Status (1 - OK)

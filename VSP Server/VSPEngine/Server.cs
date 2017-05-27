@@ -89,7 +89,7 @@ namespace VSP_Server.VSPEngine {
 			set {
 				DirectoryInfo di = new DirectoryInfo(mUserFolder);
 				if (!di.Exists) di.Create();
-				mUserFolder = UserFolder;
+				mUserFolder = value;
 			}
 		}
 		/// <summary>
@@ -101,7 +101,7 @@ namespace VSP_Server.VSPEngine {
 			set {
 				DirectoryInfo di = new DirectoryInfo(mDataFolder);
 				if (!di.Exists) di.Create();
-				mDataFolder = DataFolder;
+				mDataFolder = value;
 			}
 		}
 

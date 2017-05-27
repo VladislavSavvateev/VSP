@@ -23,8 +23,21 @@ namespace VSP_Client {
 			Console.Write("Registering new user... ");
 			long? token = mClient.Register("VladislavSavvateev", "vlad760497098", "savvateevvlad@mail.ru");
 			if (token == null) Console.WriteLine("fail!");
-			else Console.WriteLine("done! Token: {0:X}", token);
+			else {
+				Console.WriteLine("done! Token: {0:X}", token);
 
+				Console.Write("Enter RegCode: ");
+				int code;
+				while (true) {
+					try {
+						code = int.Parse(Console.ReadLine());
+						break;
+					} catch (Exception ex) { }
+				}
+				Console.Write("Confirming... ");
+				if (mClient.Confirm((long)token, code)) Console.WriteLine("done!");
+				else Console.WriteLine("fail!");
+			}
 			mClient.Disconnect();
 			Console.ReadKey();
 		}
