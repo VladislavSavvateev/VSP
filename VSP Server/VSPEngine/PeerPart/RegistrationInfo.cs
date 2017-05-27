@@ -101,6 +101,13 @@ namespace VSP_Server.VSPEngine.PeerPart {
 		}
 
 		/// <summary>
+		/// Регенерирует токен.
+		/// </summary>
+		public void RegenerateToken() {
+			mToken = GenerateRandomToken();
+		}
+
+		/// <summary>
 		/// Возвращает общую информацию об информации о регистрации.
 		/// </summary>
 		/// <returns>Информация о регистрации (кроме конфедициальной информации).</returns>

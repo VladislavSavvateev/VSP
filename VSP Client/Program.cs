@@ -21,7 +21,7 @@ namespace VSP_Client {
 			else Console.WriteLine("done! Response: \"{0}\"", response);
 
 			Console.Write("Registering new user... ");
-			long? token = mClient.Register("VladislavSavvateev", "vlad760497098", "savvateevvlad@mail.ru");
+			long? token = mClient.Register("VladislavSavvateev", "dich123", "savvateevvlad@mail.ru");
 			if (token == null) Console.WriteLine("fail!");
 			else {
 				Console.WriteLine("done! Token: {0:X}", token);
@@ -35,11 +35,18 @@ namespace VSP_Client {
 					} catch (Exception ex) { }
 				}
 				Console.Write("Confirming... ");
-				if (mClient.Confirm((long)token, code)) Console.WriteLine("done!");
-				else Console.WriteLine("fail!");
+				if (mClient.Confirm((long)token, code)) {
+					Console.WriteLine("done!");
+
+					Console.Write("Logging in... ");
+					if (mClient.Login("VladislavSavvateev", "dich123")) Console.WriteLine("done!");
+					else Console.WriteLine("fail!");
+				} else Console.WriteLine("fail!");
+
+
 			}
-			mClient.Disconnect();
 			Console.ReadKey();
+			mClient.Disconnect();
 		}
 	}
 }

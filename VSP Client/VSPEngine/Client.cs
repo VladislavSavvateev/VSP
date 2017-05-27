@@ -15,6 +15,8 @@ namespace VSP_Client.VSPEngine {
 		TcpClient mTCP;
 		NetworkStream mStream;
 
+		long? mToken;
+
 		/// <summary>
 		/// Пустой конструктор.
 		/// </summary>
@@ -161,6 +163,43 @@ namespace VSP_Client.VSPEngine {
 			// получение данных
 			int status = mStream.ReadByte();
 			return status == 1; 
+		}
+		/// <summary>
+		/// Посылает запрос серверу на логин.
+		/// </summary>
+		/// <param name="name">Имя.</param>
+		/// <param name="password">Пароль.</param>
+		/// <returns>Результат операции.</returns>
+		public bool Login(String name, String password) {
+			// тонна проверок на правильность аргументов
+			if (name == null) throw new ArgumentException("\"name\" не может быть null.");
+			byte[] name_raw = Encoding.UTF8.GetBytes(name);
+			if (name.Length < 3) throw new ArgumentException("\"name\" не может быть короче трёх символов.");
+			if (name_raw.Length > 255) throw new ArgumentException("\"name\" не может быть больше 255 байт.");
+
+			if (password == null) throw new ArgumentException("\"password\" не может быть null.");
+			byte[] password_raw = Encoding.UTF8.GetBytes(password);
+			if (password.Length < 3) throw new ArgumentException("\"password\" не может быть короче трёх символов.");
+			if (password.Length > 255) throw new ArgumentException("\"password\" не может быть больше 255 байт.");
+
+			// отправка данных
+			mStream.WriteByte(254);
+			mStream.WriteByte((byte) name_raw.Length);
+			mStream.Write(name_raw, 0, name_raw.Length);
+			mStream.WriteByte((byte) password_raw.Length);
+			mStream.Write(password_raw, 0, password_raw.Length);
+
+			// получение ответа
+			int status = mStream.ReadByte();
+			if (status != 1) return false;
+			byte[] token = new byte[8];
+			for (int i = 0; i < 8; i++) {
+				int val = mStream.ReadByte();
+				if (val == -1) return false;
+				token[i] = (byte) val;
+			}
+			mToken = BitConverter.ToInt64(token, 0);
+			return true;
 		}
 		#endregion
 	}

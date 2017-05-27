@@ -22,9 +22,17 @@ namespace VSP_Server.VSPEngine.PeerPart {
 			/// </summary>
 			SayHello = 1,
 			/// <summary>
-			/// Команда Register.
+			/// Команда регистрации.
 			/// </summary>
 			Register = 252,
+			/// <summary>
+			/// Команда подтверждения регистрации.
+			/// </summary>
+			Confirmation = 253,
+			/// <summary>
+			/// Команда логина.
+			/// </summary>
+			Login = 254, 
 			/// <summary>
 			/// Команда отключения от сервера.
 			/// </summary>
@@ -106,6 +114,11 @@ namespace VSP_Server.VSPEngine.PeerPart {
 							c253_confirmation();
 							break;
 						#endregion
+						#region #254 - Login
+						case 254:
+							c254_login();
+							break;
+						#endregion
 						#region #255 - Disconnect
 						case 255:
 							c255_disconnect();
@@ -122,12 +135,6 @@ namespace VSP_Server.VSPEngine.PeerPart {
 		private void c1_sayHello() {
 			mStream.WriteByte(5);
 			mStream.Write(Encoding.UTF8.GetBytes("HELLO"), 0, 5);
-		}
-		private void c255_disconnect() {
-			mStream.Close();
-			mTCP.Close();
-			mInterrupted = true;
-			mIsBusy = false;
 		}
 		private void c252_register() {
 			try {
@@ -190,6 +197,29 @@ namespace VSP_Server.VSPEngine.PeerPart {
 				mRegInfo.RegStatus = RegistrationInfo.RegistrationStatus.CONFIRMED;
 				mStream.WriteByte(1);
 			} catch	(Exception ex) { mStream.WriteByte(0); }
+		}
+		private void c254_login() {
+			String name = getString();
+			String password = getString();
+			RegistrationInfo ri = null;
+			foreach (RegistrationInfo ri_ in mServer.RegInfos) 
+				if (ri_.Name.Equals(name) && ri_.Password.Equals(password)) {
+					ri = ri_;
+					break;
+				}
+			if (ri == null) mStream.WriteByte(0);
+			else {
+				ri.RegenerateToken();
+				mStream.WriteByte(1);
+				mStream.Write(BitConverter.GetBytes(ri.Token), 0, 8);
+				mRegInfo = ri;
+			}
+		}
+		private void c255_disconnect() {
+			mStream.Close();
+			mTCP.Close();
+			mInterrupted = true;
+			mIsBusy = false;
 		}
 		#endregion
 

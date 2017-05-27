@@ -30,6 +30,17 @@ VSP Specification:
 			output: 
 				1 Byte - Status (1 - OK)
 
+		#254 - Login
+			input:
+				1 Byte - Length of "User Name" (N)
+				N Bytes - User Name
+				1 Byte - Length of "Password" (K)
+				K Bytes - Password
+
+			output:
+				1 Byte - Status (1 - OK)
+					8 Bytes - Token
+
 		#255 - Disconnect
 			input: nothing
 			output: nothing
