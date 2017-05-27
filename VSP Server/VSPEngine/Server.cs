@@ -74,6 +74,13 @@ namespace VSP_Server.VSPEngine {
 		}
 
 		/// <summary>
+		/// Возвращает список информации о регистрации пользователей.
+		/// </summary>
+		public List<RegistrationInfo> RegInfos {
+			get { return mRegInfos; }
+		}
+
+		/// <summary>
 		/// Возвращает или задаёт папку для хранения данных пользователей.
 		/// По умолчанию - Users
 		/// </summary>
@@ -179,7 +186,7 @@ namespace VSP_Server.VSPEngine {
 		private void gotPeer(IAsyncResult result) {
 			try {
 				TcpClient tcp = mListener.EndAcceptTcpClient(result);
-				Peer p = new Peer(tcp);
+				Peer p = new Peer(this, tcp);
 				mPeers.Add(p);
 				PeerConnected(p);
 				mListener.BeginAcceptTcpClient(new AsyncCallback(gotPeer), null);

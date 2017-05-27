@@ -114,8 +114,7 @@ namespace VSP_Server.VSPEngine.PeerPart {
 		/// <returns>Результат сравнения.</returns>
 		public override bool Equals(object obj) {
 			RegistrationInfo ri = (RegistrationInfo) obj;
-			return (mName.Equals(ri.Name) && mPassword.Equals(ri.Password) && mEmail.Equals(ri.Email)
-				&& mToken.Equals(ri.Token) && mRegStatus == ri.RegStatus);
+			return mName.Equals(ri.Name);
 		}
 		public override int GetHashCode() {
 			return (mName + mEmail).GetHashCode();

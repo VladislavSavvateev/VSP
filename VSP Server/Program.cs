@@ -39,7 +39,7 @@ namespace VSP_Server {
 			peer.GotCommand += PeerCommand;
 		}
 		private static void PeerDisconnected(Peer peer) {
-			report(TypeOfReport.INFO, "Peer diconnected!", peer);
+			report(TypeOfReport.INFO, "Peer disconnected!", peer);
 			peer.GotCommand -= PeerCommand;
 		}
 
@@ -80,7 +80,7 @@ namespace VSP_Server {
 			Console.Write(" ] ");
 			if (peer != null) {
 				Console.Write("{");
-				Console.Write("{0}", peer.GetAddress());
+				Console.Write("{0}", peer.ToString());
 				Console.Write("} ");
 			}
 			Console.WriteLine(val);

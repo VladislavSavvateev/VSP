@@ -30,6 +30,7 @@ VSP Specification:
 
 			output: 
 				1 Byte - Status (1 - OK)
+
 		#255 - Disconnect
 			input: nothing
 			output: nothing

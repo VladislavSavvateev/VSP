@@ -16,7 +16,7 @@ namespace VSP_Server.VSPEngine {
 		/// <summary>
 		/// Шаблон для отправки писем о регистрации.
 		/// </summary>
-		public static String RegCodeTemplate = "Добро пожаловать на сервер, использующий VSP!\n" +
+		public const String RegCodeTemplate = "Добро пожаловать на сервер, использующий VSP!\n" +
 			"Для продолжения регистрации введите код: {0}";
 
 		/// <summary>
@@ -24,14 +24,16 @@ namespace VSP_Server.VSPEngine {
 		/// </summary>
 		/// <param name="ri">Регистрационная информация.</param>
 		public static void SendRegCode(RegistrationInfo ri) {
-			SmtpClient smtpServer = new SmtpClient(EmailConstants.HOST, EmailConstants.PORT);
+			SmtpClient smtpServer = new SmtpClient(EmailConstants.HOST);
 			smtpServer.EnableSsl = true;
 			smtpServer.Credentials = new NetworkCredential(EmailConstants.LOGIN, EmailConstants.PASSWORD);
 			MailMessage message = new MailMessage();
-			message.To.Add(ri.Email);
+			message.To.Add(new MailAddress(ri.Email));
+			message.From = new MailAddress(EmailConstants.FROM);
 			message.Body = String.Format(RegCodeTemplate, ri.RegCode);
 			message.Subject = "Регистрация на сервере с VSP";
-			smtpServer.SendMailAsync(message);
+			message.Priority = MailPriority.High;
+			smtpServer.Send(message);
 		}
 	}
 }

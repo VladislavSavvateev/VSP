@@ -14,10 +14,17 @@ namespace VSP_Client {
 			mClient = new Client();
 			if (mClient.Connect("localhost")) Console.WriteLine("done!");
 			else Console.WriteLine("done!");
+
 			Console.Write("Sending SayHello request... ");
 			String response = mClient.SayHello();
 			if (response == null) Console.WriteLine("fail!");
 			else Console.WriteLine("done! Response: \"{0}\"", response);
+
+			Console.Write("Registering new user... ");
+			long? token = mClient.Register("VladislavSavvateev", "vlad760497098", "savvateevvlad@mail.ru");
+			if (token == null) Console.WriteLine("fail!");
+			else Console.WriteLine("done! Token: {0:X}", token);
+
 			mClient.Disconnect();
 			Console.ReadKey();
 		}

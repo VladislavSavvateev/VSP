@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Linq.SqlClient;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -21,24 +22,31 @@ namespace VSP_Server.VSPEngine.PeerPart {
 			/// </summary>
 			SayHello = 1,
 			/// <summary>
+			/// Команда Register.
+			/// </summary>
+			Register = 252,
+			/// <summary>
 			/// Команда отключения от сервера.
 			/// </summary>
 			Disconnect = 255
 		}
 		TcpClient mTCP;
 		NetworkStream mStream;
+		Server mServer;
 		RegistrationInfo mRegInfo;
 
 		bool mIsBusy;
 		Thread mThread;
 		bool mInterrupted;
+		String mLastString;
 
 		/// <summary>
 		/// Стандартный конструктор.
 		/// </summary>
 		/// <param name="tcp">TCP-клиент пира.</param>
-		public Peer(TcpClient tcp) {
+		public Peer(Server s, TcpClient tcp) {
 			mTCP = tcp;
+			mServer = s;
 			mStream = mTCP.GetStream();
 			mIsBusy = false;
 			mInterrupted = false;
@@ -88,6 +96,11 @@ namespace VSP_Server.VSPEngine.PeerPart {
 							c1_sayHello();
 							break;
 						#endregion
+						#region #252 - Register (send request)
+						case 252:
+							c252_register();
+							break;
+						#endregion
 						#region #255 - Disconnect
 						case 255:
 							c255_disconnect();
@@ -111,6 +124,54 @@ namespace VSP_Server.VSPEngine.PeerPart {
 			mInterrupted = true;
 			mIsBusy = false;
 		}
+		private void c252_register() {
+			try {
+				// получаем данные
+				String name = getString();
+				if (name == null) throw new Exception();
+				if (name.Length < 3) throw new Exception();
+				String password = getString();
+				if (password == null) throw new Exception();
+				if (password.Length < 3) throw new Exception();
+				String email = getString();
+				if (email == null) throw new Exception();
+				//if (!SqlMethods.Like(email, "*@*.*")) throw new Exception();
+
+				// проверяем на наличие уже имеющейся регинфы
+				RegistrationInfo ri = new RegistrationInfo(name, password, email, RegistrationInfo.RegistrationStatus.ON_CONFIRM);
+				bool isExists = false;
+				foreach (RegistrationInfo ri_ in mServer.RegInfos) {
+					if (ri_.Equals(ri)) {
+						isExists = true;
+						break;
+					}
+				}
+				mRegInfo = ri;
+				
+				// если такого нет, то добавляем
+				if (!isExists) mServer.RegInfos.Add(ri);
+				EmailSender.SendRegCode(ri);
+				mStream.WriteByte(1);
+				mStream.Write(BitConverter.GetBytes(ri.Token), 0, 8);
+			} catch (Exception ex) { mStream.WriteByte(0); }
+		}
+		#endregion
+
+		#region Tools
+		private String getString() {
+			return getString(1);
+		}
+		private String getString(int lengthOfLength) {
+			int length = 0;
+			for (int i = 0; i < lengthOfLength; i++) {
+				int val = mStream.ReadByte();
+				if (val == -1) return null;
+				length = (length << 8) + val;
+			}
+			byte[] buffer = new byte[length];
+			if (mStream.Read(buffer, 0, length) != length) return null;
+			return Encoding.UTF8.GetString(buffer);
+		}
 		#endregion
 
 		#region Events
@@ -127,7 +188,11 @@ namespace VSP_Server.VSPEngine.PeerPart {
 		#endregion
 
 		public override string ToString() {
-			return String.Format("{0} ({1})", mRegInfo.Name, GetAddress());
+			try {
+				if (mRegInfo != null) mLastString = String.Format("{0} ({1})", mRegInfo.Name, mRegInfo.Email);
+				else mLastString = String.Format("{0}", GetAddress());
+				return mLastString;
+			} catch (Exception ex) { return mLastString; }
 		}
 	}
 }
